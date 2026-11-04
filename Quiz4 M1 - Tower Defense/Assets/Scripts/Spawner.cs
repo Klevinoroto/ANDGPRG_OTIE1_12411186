@@ -126,9 +126,10 @@ public class Spawner : MonoBehaviour
     void Spawn(GameObject currentEnemyToSpawn)
     {
         GameObject enemyObj = Instantiate(currentEnemyToSpawn, spawnPoint.transform.position, Quaternion.identity);
+        Enemy enemy = enemyObj.GetComponent<Enemy>();
         enemyObj.transform.parent = enemyFolder.transform;
-        enemyObj.GetComponent<Enemy>().GoldDropped += enemyGoldBonus;
-        enemyObj.GetComponent<Enemy>().MaxHealth += enemyBonusHealth;
+        enemy.goldDropped += enemyGoldBonus;
+        enemy.maxHealth += enemyBonusHealth;
         //enemyObj.SetMaxHealth(enemyObj.GetMaxHealth + enemyBonusHealth);
         //enemyObj.SetGoldDropped(enemyObj.GetGoldDropped + enemyGoldBonus);
     }

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class WaveData : MonoBehaviour
+public class WaveData
 {
     public GameObject enemyType;
     public int amountToSpawn;

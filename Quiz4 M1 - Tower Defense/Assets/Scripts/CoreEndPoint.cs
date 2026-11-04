@@ -19,7 +19,10 @@ public class CoreEndPoint : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        //Debug.Log("Hello, Unity Console!");
-        Destroy(other.gameObject);
+        if (other.gameObject.layer != LayerMask.NameToLayer("Tower"))
+        {
+            health -= 10;
+            Destroy(other.gameObject);
+        }
     }
 }

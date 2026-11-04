@@ -4,21 +4,24 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
 
-    [SerializeField] bool isFlying = false;
+    [SerializeField] private bool isFlying = false;
 
-    [SerializeField] float maxHealth = 100;
-    public float MaxHealth
+    private float currentHealth;
+    [SerializeField] private float _maxHealth = 100;
+    public float maxHealth
     {
-        get { return maxHealth; }
-        set { maxHealth = value; }
+        get { return _maxHealth; }
+        set {
+            currentHealth = _maxHealth; 
+            _maxHealth = value; 
+        }
     }
-    float currentHealth;
 
-    [SerializeField] int goldDropped = 1;
-    public int GoldDropped
+    [SerializeField] private int _goldDropped = 1;
+    public int goldDropped
     {
-        get { return goldDropped; }
-        set { goldDropped = value; }
+        get { return _goldDropped; }
+        set { _goldDropped = value; }
     }
 
     int unitDamageToCore = 1;
@@ -32,39 +35,22 @@ public class Enemy : MonoBehaviour
         agent.SetDestination(GameManager.Instance.Core.transform.position);
 
         currentHealth = maxHealth;
-
-
-    }
-
-    // Setters & Getters
-    public float GetMaxHealth()
-    {
-        return maxHealth;
-    }
-    public void SetMaxHealth(float _maxHealth)
-    {
-        maxHealth = _maxHealth;
-        currentHealth = maxHealth;
-    }
-    public float GetGoldDropped()
-    {
-        return goldDropped;
-    }
-    public void SetGoldDropped(int _goldDropped)
-    {
-        goldDropped = _goldDropped;
     }
 
 
     // Actual events & functions
-    private void TakeDamage(float damage)
+    public bool TakeDamage(float damage)
     {
+        bool isKilled = false;
         currentHealth -= damage;
 
         if (currentHealth <= 0)
         {
             Destroy(this.gameObject);
+            isKilled = true;
         }
+
+        return isKilled;
     }
 
     private void OnTriggerEnter(Collider other)
