@@ -8,17 +8,22 @@ using static UnityEngine.GraphicsBuffer;
 
 public class Tower : MonoBehaviour
 {
-    private Player player = null;
-    private GameObject enemiesFolder = null;
+    protected Player player = null;
+    protected GameObject enemiesFolder = null;
     private bool isPlaced = false;
-    private bool canFire = true;
-    private float range = 7;
+    protected bool canFire = true;
 
+    public bool isPlaceable;
     public string towerType;
-    private TowerInfo info;
+    protected TowerInfo info;
     private GameObject towerModel;
 
-    [SerializeField] private SphereCollider rangeCollision;
+    private GameObject previewPlaceable;
+
+    float RoundNearestTenth(float value)
+    {
+        return Mathf.Round(value * 10f) / 10f;
+    }
 
     void Start()
     {
@@ -27,25 +32,50 @@ public class Tower : MonoBehaviour
         towerModel = Instantiate(info.model, transform);
         towerModel.transform.localPosition = Vector3.zero;
         towerModel.transform.localRotation = Quaternion.identity;
+
+        previewPlaceable = transform.Find("PreviewPlaceable").gameObject;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!isPlaced) { return; }
-        Shoot();
+        if (!isPlaced) {
+
+            MeshRenderer preview = previewPlaceable.GetComponent<MeshRenderer>();
+            isPlaceable = RoundNearestTenth(transform.position.y) == 2.2f;
+
+            if (isPlaceable) { preview.material.color = Color.green; }
+            else             { preview.material.color = Color.red; }
+        }
+        else
+        {
+            Shoot();
+        }
     }
 
     public void Place(GameObject _enemiesFolder, Player _player)
     {
         player = _player;
         enemiesFolder = _enemiesFolder;
-        rangeCollision.radius = range;
-        rangeCollision.enabled = true;
+        Destroy(previewPlaceable);
         isPlaced = true;
     }
 
-    void Shoot()
+    public IEnumerator StartCanFireCooldown()
+    {
+        canFire = false;
+        yield return new WaitForSeconds(info.shootCooldown);
+        canFire = true;
+    }
+
+    protected void RewardOnKill(bool targetKilled, int reward)
+    {
+        if (targetKilled) { player.AdjustGold(reward); }
+    }
+
+    public virtual void HitEffect(GameObject _target) {}
+
+    public virtual void Shoot()
     {
 
         List<GameObject> currentEnemies = new List<GameObject>();
@@ -59,12 +89,13 @@ public class Tower : MonoBehaviour
 
             GameObject target = null;
             float distance = 9999;
+
             foreach (GameObject _target in currentEnemies)
             {
                 Transform magnitudeCheck = _target.transform.Find("MagnitudeCheck");
 
                 float targetDistance = Vector3.Distance(transform.position, magnitudeCheck.position);
-                bool isWithinRange = targetDistance <= range;
+                bool isWithinRange = targetDistance <= info.range;
 
                 if (isWithinRange && targetDistance < distance)
                 {
@@ -77,22 +108,9 @@ public class Tower : MonoBehaviour
            {
 
                 transform.LookAt(target.transform.position);
+                HitEffect(target);
 
-                Enemy enemyScript = target.transform.GetComponent<Enemy>();
-                bool isKilled = enemyScript.TakeDamage(TowerData.Towers[towerType].damage);
-
-                if (isKilled)
-                {
-                    player.AddGold(enemyScript.goldDropped);
-                }
-
-                IEnumerator StartCooldown()
-                {
-                    canFire = false;
-                    yield return new WaitForSeconds(0.5f);
-                    canFire = true;
-                }
-                StartCoroutine(StartCooldown());
+                StartCoroutine(StartCanFireCooldown());
            }
         }
     }

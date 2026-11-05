@@ -111,6 +111,7 @@ public class Spawner : MonoBehaviour
         if (currentWave + 1 > waves.Count)
         {
             canSpawn = false;
+            enabled = false;
             Debug.Log("Waves Complete you won!");
             return;
         }
