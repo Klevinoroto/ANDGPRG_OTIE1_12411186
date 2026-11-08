@@ -27,12 +27,20 @@ public static class TowerData
 {
     public static Dictionary<string, TowerInfo> Towers = new Dictionary<string, TowerInfo>()
     {
-        { "Arrow", new TowerInfo("TowerArrow", Resources.Load<GameObject>("TowerModels/Arrow/Base"), 5, 20, 7f, 0.5f) },
+        { "Arrow1", new TowerInfo("TowerArrow", Resources.Load<GameObject>("TowerModels/Arrow/Tower1"), 5, 20, 7f, 0.5f) },
+        { "Arrow2", new TowerInfo("TowerArrow", Resources.Load<GameObject>("TowerModels/Arrow/Tower2"), 5, 20, 7f, 0.5f) },
+        { "Arrow3", new TowerInfo("TowerArrow", Resources.Load<GameObject>("TowerModels/Arrow/Tower3"), 5, 20, 7f, 0.5f) },
 
-        { "Fire", new TowerInfo("TowerFire", Resources.Load<GameObject>("TowerModels/Fire/Base"), 5, 5, 6f, 1f) },
+        { "Fire1", new TowerInfo("TowerFire", Resources.Load<GameObject>("TowerModels/Fire/Tower1"), 5, 5, 6f, 1f) },
+        { "Fire2", new TowerInfo("TowerFire", Resources.Load<GameObject>("TowerModels/Fire/Tower2"), 5, 5, 6f, 1f) },
+        { "Fire3", new TowerInfo("TowerFire", Resources.Load<GameObject>("TowerModels/Fire/Base"), 5, 5, 6f, 1f) },
 
-        { "Ice", new TowerInfo("TowerIce", Resources.Load<GameObject>("TowerModels/Ice/Base"), 5, 5, 6f, 5f) },
+        { "Ice1", new TowerInfo("TowerIce", Resources.Load<GameObject>("TowerModels/Ice/Tower1"), 5, 5, 6f, 5f) },
+        { "Ice2", new TowerInfo("TowerIce", Resources.Load<GameObject>("TowerModels/Ice/Tower2"), 5, 5, 6f, 5f) },
+        { "Ice3", new TowerInfo("TowerIce", Resources.Load<GameObject>("TowerModels/Ice/Tower3"), 5, 5, 6f, 5f) },
 
-        { "Cannon", new TowerInfo("TowerCannon", Resources.Load<GameObject>("TowerModels/Cannon/Base"), 5, 50, 15f, 2f) },
+        { "Cannon1", new TowerInfo("TowerCannon", Resources.Load<GameObject>("TowerModels/Cannon/Tower1"), 5, 50, 15f, 2f) },
+        { "Cannon2", new TowerInfo("TowerCannon", Resources.Load<GameObject>("TowerModels/Cannon/Tower2"), 5, 50, 15f, 2f) },
+        { "Cannon3", new TowerInfo("TowerCannon", Resources.Load<GameObject>("TowerModels/Cannon/Tower3"), 5, 50, 15f, 2f) },
     };
 }
