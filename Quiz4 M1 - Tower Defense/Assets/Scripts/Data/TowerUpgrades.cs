@@ -28,8 +28,8 @@ public static class TowerUpgrades
 {
     public static Dictionary<string, UpgradeInfo> Towers = new Dictionary<string, UpgradeInfo>()
     {
-        { "Arrow2a", new UpgradeInfo(5, (Tower tower) => { tower.bonusFirerate += 5; }) },
-        { "Arrow2b", new UpgradeInfo(5, (Tower tower) => { tower.bonusDamage += 5; }) },
-        { "Arrow2c", new UpgradeInfo(5, (Tower tower) => { tower.bonusRange += 5; }) },
+        { "Arrow2A", new UpgradeInfo(5, (Tower tower) => { tower.bonusFirerate += 5; }) },
+        { "Arrow2B", new UpgradeInfo(5, (Tower tower) => { tower.bonusDamage += 5; }) },
+        { "Arrow2C", new UpgradeInfo(5, (Tower tower) => { tower.bonusRange += 5; }) },
     };
 }

@@ -17,12 +17,12 @@ public class Tower : MonoBehaviour
 
     public bool isPlaceable;
     public string towerType;
-    protected TowerInfo info;
+    public TowerInfo info;
     private GameObject towerModel;
 
     private GameObject previewPlaceable;
 
-    protected int level;
+    public int level;
     protected float range;
     protected float damage;
     protected float firerate;
@@ -40,7 +40,7 @@ public class Tower : MonoBehaviour
     {
         level = 1;
         ApplyStats(level);
-        
+
         towerModel = Instantiate(info.model, transform);
         towerModel.transform.localPosition = Vector3.zero;
         towerModel.transform.localRotation = Quaternion.identity;
@@ -71,6 +71,12 @@ public class Tower : MonoBehaviour
         enemiesFolder = _enemiesFolder;
         Destroy(previewPlaceable);
         isPlaced = true;
+        GetComponent<SphereCollider>().enabled = true;
+    }
+
+    public void OnMouseDown()
+    {
+        player.OpenTowerInfo(this);
     }
 
     private void ApplyStats(int _level)
