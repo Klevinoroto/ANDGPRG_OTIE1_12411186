@@ -56,10 +56,8 @@ public class Player : MonoBehaviour
 
     void SelectTower(string towerName)
     {
-        //string path = "TowerModels/" + tower + "/Base";
-        //GameObject towerModel = Resources.Load<GameObject>(path);
 
-        TowerInfo info = TowerData.Towers[towerName];
+        TowerInfo info = TowerData.Towers[towerName + "1"];
 
         if (info.cost <= gold)
         {
@@ -71,8 +69,6 @@ public class Player : MonoBehaviour
             towerPreview.AddComponent(towerClass);
             towerPreview.transform.GetComponent<Tower>().towerType = towerName;
         }
-
-        //Instantiate(towerModel, Vector3.zero, Quaternion.identity, towerPreview.transform);
     }
 
     void HighlightedTower()

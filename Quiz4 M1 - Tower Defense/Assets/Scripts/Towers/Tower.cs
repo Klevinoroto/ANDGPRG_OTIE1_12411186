@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEditor.Rendering;
 using UnityEngine;
+using UnityEngine.Windows;
 using static UnityEditor.Experimental.GraphView.GraphView;
 using static UnityEngine.GraphicsBuffer;
 
@@ -20,6 +22,15 @@ public class Tower : MonoBehaviour
 
     private GameObject previewPlaceable;
 
+    protected int level;
+    protected float range;
+    protected float damage;
+    protected float firerate;
+
+    public float bonusRange;
+    public float bonusDamage;
+    public float bonusFirerate;
+
     float RoundNearestTenth(float value)
     {
         return Mathf.Round(value * 10f) / 10f;
@@ -27,7 +38,8 @@ public class Tower : MonoBehaviour
 
     void Start()
     {
-        info = TowerData.Towers[towerType];
+        level = 1;
+        ApplyStats(level);
         
         towerModel = Instantiate(info.model, transform);
         towerModel.transform.localPosition = Vector3.zero;
@@ -59,6 +71,15 @@ public class Tower : MonoBehaviour
         enemiesFolder = _enemiesFolder;
         Destroy(previewPlaceable);
         isPlaced = true;
+    }
+
+    private void ApplyStats(int _level)
+    {
+        level = _level;
+        info = TowerData.Towers[towerType + _level.ToString()];
+        range = info.range;
+        damage = info.damage;
+        firerate = info.shootCooldown;
     }
 
     public IEnumerator StartCanFireCooldown()

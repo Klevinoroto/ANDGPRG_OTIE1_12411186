@@ -13,7 +13,7 @@ public class TowerFire : Tower
             if (enemyScript == null) { break; } // just incase they are already destroyed
             
             yield return new WaitForSeconds(1f); // 1 seconds apply time
-            bool isKilled = enemyScript.TakeDamage(info.damage);
+            bool isKilled = enemyScript.TakeDamage(damage);
             RewardOnKill(isKilled, enemyScript.goldDropped);
 
             if (isKilled) { break; }

@@ -10,7 +10,7 @@ public class TowerCannon : Tower
     public override void HitEffect(GameObject _target)
     {
         Enemy enemyScript = _target.transform.GetComponent<Enemy>();
-        bool isKilled = enemyScript.TakeDamage(info.damage);
+        bool isKilled = enemyScript.TakeDamage(damage);
 
         RewardOnKill(isKilled, enemyScript.goldDropped);
     }
@@ -36,7 +36,7 @@ public class TowerCannon : Tower
                 Transform magnitudeCheck = _target.transform.Find("MagnitudeCheck");
 
                 float targetDistance = Vector3.Distance(transform.position, magnitudeCheck.position);
-                bool isWithinRange = targetDistance <= info.range;
+                bool isWithinRange = targetDistance <= range;
 
                 if (isWithinRange && targetDistance < distance)
                 {

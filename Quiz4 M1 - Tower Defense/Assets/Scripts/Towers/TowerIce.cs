@@ -9,7 +9,7 @@ public class TowerIce : Tower
     public override void HitEffect(GameObject _target)
     {
         Enemy enemyScript = _target.transform.GetComponent<Enemy>();
-        bool isKilled = enemyScript.TakeDamage(info.damage);
+        bool isKilled = enemyScript.TakeDamage(damage);
         enemyScript.ApplyIceSlow();
 
         RewardOnKill(isKilled, enemyScript.goldDropped);
@@ -33,7 +33,7 @@ public class TowerIce : Tower
                 Transform magnitude = _target.transform.Find("MagnitudeCheck");
                 float targetDistance = Vector3.Distance(transform.position, magnitude.position);
 
-                if (targetDistance <= info.range)
+                if (targetDistance <= range)
                 {
                     isFired = true;
                     HitEffect(_target);
