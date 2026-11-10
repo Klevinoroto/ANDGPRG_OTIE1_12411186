@@ -21,19 +21,38 @@ public class Player : MonoBehaviour
     public LayerMask layersToHit;
 
     private int gold = 20;
-    private Tower selectedTower;
+    private Tower selectedTower = null;
     private string upgradeKey;
+
+    // UI STUFF
+    GameObject infoTab;
+    TextMeshProUGUI towerName;
+    TextMeshProUGUI towerLevel;
+    TextMeshProUGUI towerDescription;
+    GameObject confirmUpgradeButton;
+
+    GameObject upgradesTab;
+    TextMeshProUGUI upgradeDescription;
 
     void Start()
     {
 
         goldTextLabel = playerUI.transform.Find("GoldCount").GetComponent<TextMeshProUGUI>();
 
+        infoTab = towerInfoUI.transform.Find("Info").gameObject;
+        towerName = infoTab.transform.Find("TowerName").gameObject.GetComponent<TextMeshProUGUI>();
+        towerLevel = infoTab.transform.Find("Level").gameObject.GetComponent<TextMeshProUGUI>();
+        towerDescription = infoTab.transform.Find("Description").gameObject.GetComponent<TextMeshProUGUI>();
+        confirmUpgradeButton = infoTab.transform.Find("Confirmation").gameObject;
+
+        GameObject upgradesTab = towerInfoUI.transform.Find("Upgrades").gameObject;
+        upgradeDescription
+
         TowerStatsFunctionality();
 
         foreach (Transform child in playerUI.transform)
         {
-            if (child.transform.name.Contains("Tower"))
+            if (child.name.Contains("Tower") && child.name != "TowerInfo")
             {
 
                 void OnButtonClicked()
@@ -106,15 +125,7 @@ public class Player : MonoBehaviour
         GameObject exitButton = towerInfoUI.transform.Find("ExitButton").gameObject;
         exitButton.GetComponent<Button>().onClick.AddListener(CloseTowerInfo);
 
-
-
-        GameObject upgradesTab = towerInfoUI.transform.Find("Upgrades").gameObject;
-
-        // Confirm Upgrade
-        GameObject infoTab = towerInfoUI.transform.Find("Info").gameObject;
-        GameObject confirmButton = infoTab.transform.Find("Confirmation").gameObject;
-        confirmButton.GetComponent<Button>().onClick.AddListener(ConfirmUpgrade);
-
+        confirmUpgradeButton.GetComponent<Button>().onClick.AddListener(ConfirmUpgrade);
 
         // One Choice
         GameObject nextTierOption = upgradesTab.transform.Find("NextTier").gameObject;
@@ -126,9 +137,9 @@ public class Player : MonoBehaviour
         void ChosenPathway(string path) // A or B or C
         {
             upgradeKey = selectedTower.towerType + (selectedTower.level + 1).ToString() + path;
-            confirmButton.SetActive(true);
+            UpgradeSelected();
         }
-        GameObject upgradePathsOption = upgradesTab.transform.Find("ThreeChoices").gameObject;
+        GameObject upgradePathsOption = upgradesTab.transform.Find("ThreeChoice").gameObject;
         foreach (Transform child in upgradePathsOption.transform)
         {
             string pathName = child.gameObject.name;
@@ -142,8 +153,18 @@ public class Player : MonoBehaviour
 
     public void OpenTowerInfo(Tower tower)
     {
+        if (selectedTower != null)
+        {
+            selectedTower.Deselect();
+        }
+
+        confirmUpgradeButton.SetActive(false);
         towerInfoUI.SetActive(true);
         selectedTower = tower;
+
+        towerName.text = selectedTower.towerType + " Tower";
+        towerLevel.text = "Level " + selectedTower.level.ToString();
+        towerDescription.text = selectedTower.info.description;
         // set ui stuff here like its info an stuff
     }
 
@@ -154,7 +175,17 @@ public class Player : MonoBehaviour
 
     void UpgradeSelected()
     {
+        confirmUpgradeButton.SetActive(true);
 
+        if ((selectedTower.level + 1) % 2 == 0) // Upgrade path
+        {
+            TowerUpgrades.Towers[upgradeKey];
+            print("Hey");
+        }
+        else // Upgrade tier
+        {
+
+        }
     }
 
     public void ConfirmUpgrade()
@@ -162,6 +193,7 @@ public class Player : MonoBehaviour
         if ((selectedTower.level + 1) % 2 == 0) // Upgrade path
         {
             TowerUpgrades.Towers[upgradeKey].Upgrade(selectedTower);
+            print("Hey");
         }
         else // Upgrade tier
         {

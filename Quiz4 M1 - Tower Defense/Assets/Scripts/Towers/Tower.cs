@@ -20,7 +20,7 @@ public class Tower : MonoBehaviour
     public TowerInfo info;
     private GameObject towerModel;
 
-    private GameObject previewPlaceable;
+    private GameObject baseHighlight;
 
     public int level;
     protected float range;
@@ -45,7 +45,7 @@ public class Tower : MonoBehaviour
         towerModel.transform.localPosition = Vector3.zero;
         towerModel.transform.localRotation = Quaternion.identity;
 
-        previewPlaceable = transform.Find("PreviewPlaceable").gameObject;
+        baseHighlight = transform.Find("PreviewPlaceable").gameObject;
     }
 
     // Update is called once per frame
@@ -53,7 +53,7 @@ public class Tower : MonoBehaviour
     {
         if (!isPlaced) {
 
-            MeshRenderer preview = previewPlaceable.GetComponent<MeshRenderer>();
+            MeshRenderer preview = baseHighlight.GetComponent<MeshRenderer>();
             isPlaceable = RoundNearestTenth(transform.position.y) == 2.2f;
 
             if (isPlaceable) { preview.material.color = Color.green; }
@@ -69,14 +69,28 @@ public class Tower : MonoBehaviour
     {
         player = _player;
         enemiesFolder = _enemiesFolder;
-        Destroy(previewPlaceable);
+        baseHighlight.SetActive(false);
         isPlaced = true;
         GetComponent<SphereCollider>().enabled = true;
     }
 
     public void OnMouseDown()
     {
+        MeshRenderer preview = baseHighlight.GetComponent<MeshRenderer>();
+        preview.material.color = Color.orange;
+        baseHighlight.SetActive(true);
+
         player.OpenTowerInfo(this);
+    }
+
+    public void Upgrade()
+    {
+
+    }
+
+    public void Deselect()
+    {
+        baseHighlight.SetActive(false);
     }
 
     private void ApplyStats(int _level)
