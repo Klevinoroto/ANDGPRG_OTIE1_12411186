@@ -6,6 +6,8 @@ using UnityEngine;
 public class TowerFire : Tower
 {
 
+    private float applyTime = 1.2f;
+
     IEnumerator Burn(Enemy enemyScript)
     {
         for (int i = 0; i < 8; i++) // damage X 8 
@@ -19,6 +21,8 @@ public class TowerFire : Tower
             if (isKilled) { break; }
         }
     }
+
+    public override void ApplyUniqueBonus(float value) { upgradeDescriptors += " (" + value.ToString() + "- Apply Time)"; applyTime -= value; }
 
     public override void HitEffect(GameObject _target)
     {

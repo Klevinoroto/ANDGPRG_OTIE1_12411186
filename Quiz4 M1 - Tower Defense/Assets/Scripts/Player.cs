@@ -1,5 +1,6 @@
 using Mono.Cecil;
 using System;
+using System.IO;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -20,8 +21,9 @@ public class Player : MonoBehaviour
     [SerializeField] private GameObject towerPreview;
     public LayerMask layersToHit;
 
-    private int gold = 20;
+    private int gold = 0;
     private Tower selectedTower = null;
+    private int selectedUpgradeCost;
     private string upgradeKey;
 
     // UI STUFF
@@ -29,10 +31,16 @@ public class Player : MonoBehaviour
     TextMeshProUGUI towerName;
     TextMeshProUGUI towerLevel;
     TextMeshProUGUI towerDescription;
+    TextMeshProUGUI towerUpgradeSelection;
+    TextMeshProUGUI towerUpgradeCost;
     GameObject confirmUpgradeButton;
 
     GameObject upgradesTab;
     TextMeshProUGUI upgradeDescription;
+    TextMeshProUGUI upgradeSubheader;
+
+    GameObject upgradePathsTab;
+    GameObject upgradeTierTab;
 
     void Start()
     {
@@ -43,11 +51,19 @@ public class Player : MonoBehaviour
         towerName = infoTab.transform.Find("TowerName").gameObject.GetComponent<TextMeshProUGUI>();
         towerLevel = infoTab.transform.Find("Level").gameObject.GetComponent<TextMeshProUGUI>();
         towerDescription = infoTab.transform.Find("Description").gameObject.GetComponent<TextMeshProUGUI>();
+        towerUpgradeSelection = infoTab.transform.Find("Selection").gameObject.GetComponent<TextMeshProUGUI>();
+        towerUpgradeCost = infoTab.transform.Find("Cost").gameObject.GetComponent<TextMeshProUGUI>();
         confirmUpgradeButton = infoTab.transform.Find("Confirmation").gameObject;
 
-        GameObject upgradesTab = towerInfoUI.transform.Find("Upgrades").gameObject;
-        upgradeDescription
+        upgradesTab = towerInfoUI.transform.Find("Upgrades").gameObject;
+        upgradeDescription = upgradesTab.transform.Find("Description").gameObject.GetComponent<TextMeshProUGUI>();
+        upgradeSubheader = upgradesTab.transform.Find("Subheader").gameObject.GetComponent<TextMeshProUGUI>();
 
+        upgradePathsTab = upgradesTab.transform.Find("ThreeChoice").gameObject;
+        upgradeTierTab = upgradesTab.transform.Find("NextTier").gameObject;
+
+        gold = 0;
+        AdjustGold(20);
         TowerStatsFunctionality();
 
         foreach (Transform child in playerUI.transform)
@@ -66,12 +82,12 @@ public class Player : MonoBehaviour
         }
     }
 
-
     void Update()
     {
         HighlightedTower();
     }
 
+    public int GetGold() { return gold; }
     public void AdjustGold(int amount)
     {
         gold += amount;
@@ -119,6 +135,8 @@ public class Player : MonoBehaviour
         }
     }
 
+    private bool IsUpgradePath() { return (selectedTower.level + 1) % 2 == 0; }
+
     void TowerStatsFunctionality()
     {
         // Exit the menu
@@ -139,8 +157,7 @@ public class Player : MonoBehaviour
             upgradeKey = selectedTower.towerType + (selectedTower.level + 1).ToString() + path;
             UpgradeSelected();
         }
-        GameObject upgradePathsOption = upgradesTab.transform.Find("ThreeChoice").gameObject;
-        foreach (Transform child in upgradePathsOption.transform)
+        foreach (Transform child in upgradePathsTab.transform)
         {
             string pathName = child.gameObject.name;
             if (pathName.Contains("Option"))
@@ -158,46 +175,96 @@ public class Player : MonoBehaviour
             selectedTower.Deselect();
         }
 
+        selectedTower = tower;
+        upgradesTab.transform.Find("Header").gameObject.SetActive(true);
+        upgradesTab.transform.Find("Subheader").gameObject.SetActive(true);
+        upgradePathsTab.SetActive(false);
+        upgradeTierTab.SetActive(false);
         confirmUpgradeButton.SetActive(false);
         towerInfoUI.SetActive(true);
-        selectedTower = tower;
+
+        upgradeSubheader.text = "Lv. " + tower.level.ToString() + " -> Lv. " + (tower.level + 1).ToString();
 
         towerName.text = selectedTower.towerType + " Tower";
         towerLevel.text = "Level " + selectedTower.level.ToString();
-        towerDescription.text = selectedTower.info.description;
+        towerDescription.text = selectedTower.info.description + selectedTower.upgradeDescriptors;
+        towerUpgradeSelection.text = "";
+        towerUpgradeCost.text = "";
+
+        if (selectedTower.level == 5)
+        {
+            upgradesTab.transform.Find("Header").gameObject.SetActive(false);
+            upgradesTab.transform.Find("Subheader").gameObject.SetActive(false);
+            upgradeDescription.text = "Tower has reached max level!";
+            return;
+        }
+
+        if (IsUpgradePath()) // Upgrade path
+        {
+            upgradePathsTab.SetActive(true);
+            upgradeDescription.text = "Select an upgrade!";
+            foreach (Transform child in upgradePathsTab.transform)
+            {
+                string pathName = child.gameObject.name;
+                if (pathName.Contains("Option"))
+                {
+                    string upgradeKey = selectedTower.towerType + (selectedTower.level + 1).ToString() + pathName.Replace("Option", "");
+                    UpgradeInfo upgradeInfo = TowerUpgrades.Towers[upgradeKey];
+
+                    TextMeshProUGUI optionText = child.Find("Label").GetComponent<TextMeshProUGUI>();
+                    optionText.text = upgradeInfo.name;
+                }
+            }
+        }
+        else // Upgrade tier
+        {
+            upgradeTierTab.SetActive(true);
+            upgradeDescription.text = "Upgrade the to the next tier of the tower! Generally boosting all stats.";
+        }
         // set ui stuff here like its info an stuff
     }
 
     public void CloseTowerInfo()
     {
         towerInfoUI.SetActive(false);
+        selectedTower.Deselect();
+        selectedTower = null;
     }
 
     void UpgradeSelected()
     {
         confirmUpgradeButton.SetActive(true);
 
-        if ((selectedTower.level + 1) % 2 == 0) // Upgrade path
+        if (IsUpgradePath()) // Upgrade path
         {
-            TowerUpgrades.Towers[upgradeKey];
-            print("Hey");
+            UpgradeInfo upgradeInfo = TowerUpgrades.Towers[upgradeKey];
+            upgradeDescription.text = upgradeInfo.description;
+            towerUpgradeSelection.text = upgradeInfo.name;
+
+            selectedUpgradeCost = upgradeInfo.cost;
         }
         else // Upgrade tier
         {
+            TowerInfo nextLevelInfo = TowerData.Towers[selectedTower.towerType + (selectedTower.tier+1).ToString()];
+            towerUpgradeSelection.text = "Next Tier Level";
 
+            selectedUpgradeCost = nextLevelInfo.cost;
         }
+
+        towerUpgradeCost.text = "Cost: " + selectedUpgradeCost.ToString() + " Gold";
     }
 
     public void ConfirmUpgrade()
     {
-        if ((selectedTower.level + 1) % 2 == 0) // Upgrade path
+        if (gold >= selectedUpgradeCost)
         {
-            TowerUpgrades.Towers[upgradeKey].Upgrade(selectedTower);
-            print("Hey");
-        }
-        else // Upgrade tier
-        {
+            AdjustGold(-selectedUpgradeCost);
 
+            if (IsUpgradePath()) { selectedTower.UpgradePath(upgradeKey); }// Upgrade path
+            else                 { selectedTower.ApplyNextTier(); }
+
+            selectedTower.level++;
+            CloseTowerInfo();
         }
     }
 

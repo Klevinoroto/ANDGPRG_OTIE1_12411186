@@ -6,11 +6,15 @@ using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 public class TowerIce : Tower
 {
+    private float slowTime = 1f;
+
+    public override void ApplyUniqueBonus(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Slow Time)"; slowTime += value; }
+
     public override void HitEffect(GameObject _target)
     {
         Enemy enemyScript = _target.transform.GetComponent<Enemy>();
         bool isKilled = enemyScript.TakeDamage(damage);
-        enemyScript.ApplyIceSlow();
+        enemyScript.ApplyIceSlow(slowTime);
 
         RewardOnKill(isKilled, enemyScript.goldDropped);
     }

@@ -7,6 +7,8 @@ public class TowerCannon : Tower
 
     private float splashDistance = 4f;
 
+    public override void ApplyUniqueBonus(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Splash Range)"; splashDistance += value; }
+
     public override void HitEffect(GameObject _target)
     {
         Enemy enemyScript = _target.transform.GetComponent<Enemy>();

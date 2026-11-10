@@ -38,14 +38,14 @@ public class Spawner : MonoBehaviour
 
         WaveData[] wave1 = new WaveData[]
         {
-            new WaveData(knightPrefab, 3),
+            new WaveData(knightPrefab, 5),
             new WaveData(dragonPrefab, 1),
             new WaveData(theGeneralPrefab, 1),
         };
 
         WaveData[] wave2 = new WaveData[]
         {
-            new WaveData(knightPrefab, 5),
+            new WaveData(knightPrefab, 8),
             new WaveData(dragonPrefab, 3),
             new WaveData(dragonKingPrefab, 1),
         };

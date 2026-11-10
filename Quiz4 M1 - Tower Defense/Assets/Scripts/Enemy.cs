@@ -7,10 +7,9 @@ public class Enemy : MonoBehaviour
 
     [SerializeField] private bool isFlying = false;
 
-    private int arrowBleed = 0;
+    private float arrowBleed = 0;
 
     private bool isIced = false;
-    private float icedCooldown = 1f;
 
     private float currentHealth;
     [SerializeField] private float _maxHealth = 100;
@@ -51,7 +50,7 @@ public class Enemy : MonoBehaviour
         float finalDamage = damage + arrowBleed;
 
         currentHealth -= finalDamage;
-        print(finalDamage);
+        //print(finalDamage);
 
         if (currentHealth <= 0)
         {
@@ -61,23 +60,20 @@ public class Enemy : MonoBehaviour
 
         return isKilled;
     }
-    public void ApplyArrowBleed()
-    {
-        arrowBleed++;
-    }
+    public void ApplyArrowBleed(float bleedAmount) { arrowBleed += bleedAmount; }
 
-    IEnumerator IceSlow() // reduce to 20% movement speed
+    IEnumerator IceSlow(float slowTime) // reduce to 20% movement speed
     {
         print("BRO GOT ICED");
         isIced = true;
         agent.speed *= 0.2f;
-        yield return new WaitForSeconds(icedCooldown);
+        yield return new WaitForSeconds(slowTime);
         agent.speed /= 0.2f;
         isIced = false;
     }
-    public void ApplyIceSlow()
+    public void ApplyIceSlow(float slowTime)
     {
-        if (!isIced) { StartCoroutine(IceSlow()); }
+        if (!isIced) { StartCoroutine(IceSlow(slowTime)); }
     }
 
     private void OnTriggerEnter(Collider other)

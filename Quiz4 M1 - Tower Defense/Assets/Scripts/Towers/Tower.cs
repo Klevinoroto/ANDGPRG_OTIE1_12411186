@@ -18,34 +18,42 @@ public class Tower : MonoBehaviour
     public bool isPlaceable;
     public string towerType;
     public TowerInfo info;
-    private GameObject towerModel;
+    private GameObject towerModel = null;
 
     private GameObject baseHighlight;
+    private GameObject upgradeIndicator;
+
 
     public int level;
+    public int tier;
+    public string upgradeDescriptors = "";
     protected float range;
     protected float damage;
     protected float firerate;
+    private int nextUpgradeCost;
 
-    public float bonusRange;
-    public float bonusDamage;
-    public float bonusFirerate;
+    private float bonusRange;
+    private float bonusDamage;
+    private float bonusFirerate;
 
-    float RoundNearestTenth(float value)
-    {
-        return Mathf.Round(value * 10f) / 10f;
-    }
+    float RoundNearestTenth(float value) { return Mathf.Round(value * 10f) / 10f; }
+
+    public virtual void ApplyUniqueBonus(float value) { }
+    public void ApplyBonusRange(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Range)"; bonusRange += value; range += value; }
+    public void ApplyBonusDamage(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Damage)"; bonusDamage += value; damage += value; }
+    public void ApplyBonusFirerate(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Range)"; bonusFirerate += value; firerate -= value; }
 
     void Start()
     {
-        level = 1;
-        ApplyStats(level);
+        nextUpgradeCost = 5;
 
-        towerModel = Instantiate(info.model, transform);
-        towerModel.transform.localPosition = Vector3.zero;
-        towerModel.transform.localRotation = Quaternion.identity;
+        level = 1;
+        tier = 0;
+        ApplyNextTier();
 
         baseHighlight = transform.Find("PreviewPlaceable").gameObject;
+        upgradeIndicator = transform.Find("UpgradeReady").gameObject;
+        upgradeIndicator.GetComponent<MeshRenderer>().material.color = Color.yellow;
     }
 
     // Update is called once per frame
@@ -61,6 +69,10 @@ public class Tower : MonoBehaviour
         }
         else
         {
+            
+            if (player.GetGold() >= nextUpgradeCost) { upgradeIndicator.SetActive(true); }
+            else                                     { upgradeIndicator.SetActive(false); }
+
             Shoot();
         }
     }
@@ -83,29 +95,37 @@ public class Tower : MonoBehaviour
         player.OpenTowerInfo(this);
     }
 
-    public void Upgrade()
-    {
-
-    }
-
     public void Deselect()
     {
         baseHighlight.SetActive(false);
     }
 
-    private void ApplyStats(int _level)
+    public void UpgradePath(string upgradeKey) { 
+        TowerUpgrades.Towers[upgradeKey].Upgrade(this);
+        nextUpgradeCost = TowerData.Towers[towerType + (tier+1).ToString()].cost;
+    }
+    public void ApplyNextTier()
     {
-        level = _level;
-        info = TowerData.Towers[towerType + _level.ToString()];
-        range = info.range;
-        damage = info.damage;
-        firerate = info.shootCooldown;
+        tier++;
+
+        info = TowerData.Towers[towerType + tier.ToString()];
+        range = info.range + bonusRange;
+        damage = info.damage + bonusDamage;
+        firerate = info.shootCooldown + bonusFirerate;
+
+        if (towerModel != null) { Destroy(towerModel); }
+        towerModel = Instantiate(info.model, transform);
+        towerModel.transform.localPosition = Vector3.zero;
+        towerModel.transform.localRotation = Quaternion.identity;
+
+        if (level == 5) { nextUpgradeCost = 999999; }
+        else            { nextUpgradeCost = 5; }
     }
 
     public IEnumerator StartCanFireCooldown()
     {
         canFire = false;
-        yield return new WaitForSeconds(info.shootCooldown);
+        yield return new WaitForSeconds(firerate);
         canFire = true;
     }
 
@@ -136,7 +156,7 @@ public class Tower : MonoBehaviour
                 Transform magnitudeCheck = _target.transform.Find("MagnitudeCheck");
 
                 float targetDistance = Vector3.Distance(transform.position, magnitudeCheck.position);
-                bool isWithinRange = targetDistance <= info.range;
+                bool isWithinRange = targetDistance <= range;
 
                 if (isWithinRange && targetDistance < distance)
                 {
