@@ -1,5 +1,6 @@
 using Mono.Cecil;
 using System;
+using System.Collections;
 using System.IO;
 using TMPro;
 using Unity.VisualScripting;
@@ -26,6 +27,8 @@ public class Player : MonoBehaviour
     private int selectedUpgradeCost;
     private string upgradeKey;
 
+    private bool finishedTutorial = false;
+
     // UI STUFF
     GameObject infoTab;
     TextMeshProUGUI towerName;
@@ -41,6 +44,9 @@ public class Player : MonoBehaviour
 
     GameObject upgradePathsTab;
     GameObject upgradeTierTab;
+
+    GameObject tutorialTab1;
+    GameObject tutorialTab2;
 
     void Start()
     {
@@ -62,8 +68,11 @@ public class Player : MonoBehaviour
         upgradePathsTab = upgradesTab.transform.Find("ThreeChoice").gameObject;
         upgradeTierTab = upgradesTab.transform.Find("NextTier").gameObject;
 
+        tutorialTab1 = playerUI.transform.Find("Tutorial").Find("Tutorial1").gameObject;
+        tutorialTab2 = playerUI.transform.Find("Tutorial").Find("Tutorial2").gameObject;
+
         gold = 0;
-        AdjustGold(20);
+        AdjustGold(60);
         TowerStatsFunctionality();
 
         foreach (Transform child in playerUI.transform)
@@ -74,6 +83,7 @@ public class Player : MonoBehaviour
                 void OnButtonClicked()
                 {
                     SelectTower(child.transform.name.Replace("Tower", ""));
+                    StartCoroutine(TutorialEnd());
                 }
 
                 Button button = child.gameObject.GetComponent<Button>();
@@ -246,12 +256,12 @@ public class Player : MonoBehaviour
         else // Upgrade tier
         {
             TowerInfo nextLevelInfo = TowerData.Towers[selectedTower.towerType + (selectedTower.tier+1).ToString()];
-            towerUpgradeSelection.text = "Next Tier Level";
+            towerUpgradeSelection.text = "Tier Up";
 
             selectedUpgradeCost = nextLevelInfo.cost;
         }
 
-        towerUpgradeCost.text = "Cost: " + selectedUpgradeCost.ToString() + " Gold";
+        towerUpgradeCost.text = "Cost: " + selectedUpgradeCost.ToString();
     }
 
     public void ConfirmUpgrade()
@@ -265,6 +275,19 @@ public class Player : MonoBehaviour
 
             selectedTower.level++;
             CloseTowerInfo();
+        }
+    }
+
+    IEnumerator TutorialEnd()
+    {
+        if (!finishedTutorial)
+        {
+            finishedTutorial = true;
+
+            tutorialTab1.SetActive(false);
+            tutorialTab2.SetActive(true);
+            yield return new WaitForSeconds(10f);
+            tutorialTab2.SetActive(false);
         }
     }
 

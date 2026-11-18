@@ -1,6 +1,10 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
+using UnityEngine.Audio;
+using static UnityEngine.GraphicsBuffer;
+using static UnityEngine.ParticleSystem;
 
 public class Enemy : MonoBehaviour
 {
@@ -9,6 +13,7 @@ public class Enemy : MonoBehaviour
 
     private float arrowBleed = 0;
 
+    private GameObject freezeFX;
     private bool isIced = false;
 
     private float currentHealth;
@@ -29,7 +34,7 @@ public class Enemy : MonoBehaviour
         set { _goldDropped = value; }
     }
 
-    int unitDamageToCore = 1;
+    int unitDamageToCore = 10;
 
     NavMeshAgent agent;
 
@@ -39,9 +44,15 @@ public class Enemy : MonoBehaviour
         agent = this.GetComponent<NavMeshAgent>();
         agent.SetDestination(GameManager.Instance.Core.transform.position);
 
+        freezeFX = Resources.Load<GameObject>("TowerModels/Ice/FreezeEffect");
+
         currentHealth = maxHealth;
     }
 
+    void Death()
+    {
+        Destroy(gameObject);
+    }
 
     // Actual events & functions
     public bool TakeDamage(float damage)
@@ -52,9 +63,9 @@ public class Enemy : MonoBehaviour
         currentHealth -= finalDamage;
         //print(finalDamage);
 
-        if (currentHealth <= 0)
+        if (currentHealth <= 0 && this != null)
         {
-            Destroy(this.gameObject);
+            Death();
             isKilled = true;
         }
 
@@ -64,23 +75,28 @@ public class Enemy : MonoBehaviour
 
     IEnumerator IceSlow(float slowTime) // reduce to 20% movement speed
     {
-        print("BRO GOT ICED");
+
+        GameObject slowEffect = Instantiate(freezeFX, transform, false);
+        slowEffect.transform.localPosition = transform.Find("Target").transform.localPosition;
+
         isIced = true;
         agent.speed *= 0.2f;
         yield return new WaitForSeconds(slowTime);
         agent.speed /= 0.2f;
         isIced = false;
+
+        Destroy(slowEffect);
     }
     public void ApplyIceSlow(float slowTime)
     {
         if (!isIced) { StartCoroutine(IceSlow(slowTime)); }
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.name.Contains("EndPoint"))
-        {
-            Destroy(this.gameObject);
-        }
-    }
+    //private void OnTriggerEnter(Collider other)
+    //{
+    //    if (other.gameObject.name.Contains("EndPoint"))
+    //    {
+    //        Destroy(this.gameObject);
+    //    }
+    //}
 }

@@ -1,13 +1,21 @@
 using Mono.Cecil;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class TowerCannon : Tower
 {
 
+    private GameObject particles;
     private float splashDistance = 4f;
 
-    public override void ApplyUniqueBonus(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Splash Range)"; splashDistance += value; }
+    protected override void Start()
+    {
+        base.Start();
+        particles = Resources.Load<GameObject>("TowerModels/Cannon/BigExplosion");
+    }
+
+    public override void ApplyUniqueBonus(float value) { upgradeDescriptors += "\n(" + value.ToString() + "+ Splash Range)"; splashDistance += value; }
 
     public override void HitEffect(GameObject _target)
     {
@@ -50,10 +58,18 @@ public class TowerCannon : Tower
             if (target != null)
             {
 
-                transform.LookAt(target.transform.position);
+                TowerAimAt(target);
                 HitEffect(target);
 
                 targetMagnitude = target.transform.Find("MagnitudeCheck");
+
+                audioSources[5].Play();
+
+                GameObject effects = Instantiate(particles, transform);
+                effects.transform.position = targetMagnitude.position;
+                effects.GetComponent<ParticleSystem>().Emit(1);
+                Destroy(effects, 1.9f);
+
 
                 // Cannon splash
                 foreach (GameObject _splashTarget in currentEnemies)
@@ -71,5 +87,16 @@ public class TowerCannon : Tower
                 StartCoroutine(StartCanFireCooldown());
             }
         }
+    }
+
+    public override void TowerAimAt(GameObject _target)
+    {
+        Vector3 baseAimAt = _target.transform.Find("Target").transform.position - transform.position;
+        baseAimAt.y = 0f;
+        Quaternion lookRotationY = Quaternion.LookRotation(baseAimAt);
+
+        LeanTween.cancel(towerModel);
+        LeanTween.rotate(towerModel, Quaternion.Euler(0f, lookRotationY.eulerAngles.y, 0f).eulerAngles, 0.1f)
+                 .setEase(LeanTweenType.easeOutQuad);
     }
 }

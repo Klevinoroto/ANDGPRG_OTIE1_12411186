@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Windows;
 using static UnityEditor.Experimental.GraphView.GraphView;
 using static UnityEngine.GraphicsBuffer;
+using static UnityEngine.ParticleSystem;
 
 public class Tower : MonoBehaviour
 {
@@ -18,11 +19,15 @@ public class Tower : MonoBehaviour
     public bool isPlaceable;
     public string towerType;
     public TowerInfo info;
-    private GameObject towerModel = null;
+    protected GameObject towerModel = null;
 
     private GameObject baseHighlight;
     private GameObject upgradeIndicator;
+    private GameObject upgradeEffect;
 
+    protected AudioSource[] audioSources;
+    private AudioSource levelUpSFX;
+    private AudioSource buildingSFX;
 
     public int level;
     public int tier;
@@ -39,12 +44,18 @@ public class Tower : MonoBehaviour
     float RoundNearestTenth(float value) { return Mathf.Round(value * 10f) / 10f; }
 
     public virtual void ApplyUniqueBonus(float value) { }
-    public void ApplyBonusRange(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Range)"; bonusRange += value; range += value; }
-    public void ApplyBonusDamage(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Damage)"; bonusDamage += value; damage += value; }
-    public void ApplyBonusFirerate(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Range)"; bonusFirerate += value; firerate -= value; }
+    public void ApplyBonusRange(float value) { upgradeDescriptors += "\n(" + value.ToString() + "+ Range)"; bonusRange += value; range += value; }
+    public void ApplyBonusDamage(float value) { upgradeDescriptors += "\n(" + value.ToString() + "+ Damage)"; bonusDamage += value; damage += value; }
+    public void ApplyBonusFirerate(float value) { upgradeDescriptors += "\n(" + value.ToString() + "+ Range)"; bonusFirerate += value; firerate -= value; }
 
-    void Start()
+    protected virtual void Start()
     {
+        audioSources = GetComponents<AudioSource>();
+        levelUpSFX = audioSources[0];
+        buildingSFX = audioSources[1];
+
+        upgradeEffect = Resources.Load<GameObject>("TinyExplosion");
+
         nextUpgradeCost = 5;
 
         level = 1;
@@ -83,6 +94,7 @@ public class Tower : MonoBehaviour
         enemiesFolder = _enemiesFolder;
         baseHighlight.SetActive(false);
         isPlaced = true;
+        buildingSFX.Play();
         GetComponent<SphereCollider>().enabled = true;
     }
 
@@ -100,12 +112,29 @@ public class Tower : MonoBehaviour
         baseHighlight.SetActive(false);
     }
 
-    public void UpgradePath(string upgradeKey) { 
+    public void UpgradeEffect()
+    {
+        if (tier == 0 ) { return; }
+
+        levelUpSFX.Play();
+        buildingSFX.Play();
+
+        GameObject fx = Instantiate(upgradeEffect, transform);
+        fx.transform.position = transform.position;
+        fx.GetComponent<ParticleSystem>().Emit(1);
+        Destroy(fx, 1.9f);
+    }
+
+    public void UpgradePath(string upgradeKey) {
+        UpgradeEffect();
+
         TowerUpgrades.Towers[upgradeKey].Upgrade(this);
         nextUpgradeCost = TowerData.Towers[towerType + (tier+1).ToString()].cost;
     }
     public void ApplyNextTier()
     {
+        UpgradeEffect();
+
         tier++;
 
         info = TowerData.Towers[towerType + tier.ToString()];
@@ -118,7 +147,7 @@ public class Tower : MonoBehaviour
         towerModel.transform.localPosition = Vector3.zero;
         towerModel.transform.localRotation = Quaternion.identity;
 
-        if (level == 5) { nextUpgradeCost = 999999; }
+        if (tier == 3) { nextUpgradeCost = 999999; }
         else            { nextUpgradeCost = 5; }
     }
 
@@ -135,6 +164,8 @@ public class Tower : MonoBehaviour
     }
 
     public virtual void HitEffect(GameObject _target) {}
+
+    public virtual void TowerAimAt(GameObject _target) { }
 
     public virtual void Shoot()
     {
@@ -168,7 +199,7 @@ public class Tower : MonoBehaviour
            if (target != null)
            {
 
-                transform.LookAt(target.transform.position);
+                TowerAimAt(target);
                 HitEffect(target);
 
                 StartCoroutine(StartCanFireCooldown());

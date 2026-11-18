@@ -6,9 +6,16 @@ using static UnityEngine.InputSystem.LowLevel.InputStateHistory;
 
 public class TowerIce : Tower
 {
-    private float slowTime = 1f;
+    private GameObject particles;
+    private float slowTime = 3f;
 
-    public override void ApplyUniqueBonus(float value) { upgradeDescriptors += " (" + value.ToString() + "+ Slow Time)"; slowTime += value; }
+    protected override void Start()
+    {
+        base.Start();
+        particles = Resources.Load<GameObject>("TowerModels/Ice/BigSplash");
+    }
+
+    public override void ApplyUniqueBonus(float value) { upgradeDescriptors += "\n(" + value.ToString() + "+ Slow Time)"; slowTime += value; }
 
     public override void HitEffect(GameObject _target)
     {
@@ -44,7 +51,17 @@ public class TowerIce : Tower
                 }
             }
 
-            if (isFired) { StartCoroutine(StartCanFireCooldown()); }
+            if (isFired) {
+
+                audioSources[3].Play();
+
+                GameObject effects = Instantiate(particles, transform);
+                effects.transform.position = transform.position;
+                effects.GetComponent<ParticleSystem>().Emit(1);
+                Destroy(effects, 2f);
+
+                StartCoroutine(StartCanFireCooldown());
+            }
         }
 
     }

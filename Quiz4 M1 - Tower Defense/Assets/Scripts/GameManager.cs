@@ -1,10 +1,14 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
 
     public static GameManager Instance;
 
+    [SerializeField] GameObject endScreen;
     [SerializeField] GameObject core;
     public GameObject Core { get => core; }
 
@@ -12,15 +16,23 @@ public class GameManager : MonoBehaviour
     {
         Instance = this;
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+
+    public void EndScreen(bool hasWon)
     {
+        endScreen.SetActive(true);
 
-    }
+        TextMeshProUGUI endMessage = endScreen.transform.Find("Message").GetComponent<TextMeshProUGUI>();
 
-    // Update is called once per frame
-    void Update()
-    {
+        if (hasWon) { endMessage.text = "YOU WIN!"; }
+        else { endMessage.text = "You Lose."; }
 
+        void OnButtonClicked()
+        {
+            int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+            SceneManager.LoadScene(currentSceneIndex);
+        }
+
+        Button button = endScreen.transform.Find("Restart").GetComponent<Button>();
+        button.onClick.AddListener(OnButtonClicked);
     }
 }
